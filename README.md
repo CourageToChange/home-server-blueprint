@@ -87,9 +87,21 @@ A game or a demo has no legitimate reason to talk to the photo library, so it is
 discouraged from doing so, it is prevented at the network layer, and the rule persists across a
 reboot.
 
-📌 **A constraint like this will look, later, like an oversight.** Someone will find that the public
-guest cannot download its own dependencies and will be tempted to "fix" the firewall. It is not
-broken. Images are built elsewhere and shipped in as artifacts. **Before relaxing any constraint,
+📌 **A constraint like this will look, later, like an oversight**, and the two public guests are
+not constrained the same way, which is the part worth understanding before touching either.
+
+One of them has no outbound access at all. Someone will find that it cannot download its own
+dependencies and will be tempted to "fix" the firewall. It is not broken. That guest's images are
+built on a trusted machine and shipped in as finished artifacts, so production never needs to
+reach a package registry.
+
+The other is allowed out to ports 80 and 443 on purpose, because it does pull packages at build
+time, and its firewall comment says so in as many words. It still cannot reach a single private
+address. Verified by probe rather than by reading the rules: it reaches `1.1.1.1` on both ports,
+and the photo library, the hypervisor interface and the sibling container are all refused.
+
+🔑 **The isolation is identical; the egress is not.** Treating them as one posture is how a true
+sentence about one machine ends up describing the wrong one. **Before relaxing any constraint,
 find out what it protects.**
 
 ### Storage is split by what the loss would mean
