@@ -15,20 +15,21 @@ do not. Where a specific number appears it is there because the number itself ta
 ## The shape
 
 One hypervisor. Every service in its own unprivileged container, and full virtual machines where a
-container is not a hard enough boundary, or the software only ships as a whole appliance. Nothing listens on the public internet.
-Anything that needs to be reachable from outside is reached through an **outbound-only tunnel**, so
-the router has **no forwarded ports at all** and the home IP address is never published.
+container is not a hard enough boundary, or the software only ships as a whole appliance.
+The websites and demos are reached through an **outbound-only tunnel**, so none of them needs a
+forwarded port and no DNS record for them points at the home IP address. **One port is forwarded on the
+router**: 32400, so Plex can stream outside the house.
 
 ```
         internet
             │
     ┌───────┴────────┐
     │  CDN / tunnel  │   outbound connection, initiated from inside
-    └───────┬────────┘   there is no other way in
+    └───────┬────────┘   the only way in for the websites
             │
     ┌───────┴────────────────────────────────┐
-    │  reverse proxy container               │
-    │  routing, rate limiting, access rules  │
+    │  tunnel connector container            │
+    │  routes each hostname to its service   │
     └───┬────────────────────────────┬───────┘
         │                            │
    ┌────┴─────┐                ┌─────┴──────────────┐
@@ -67,15 +68,19 @@ still exit cleanly.
 **The fix is to match a directory that already works.** Do not try to reason out the id mapping
 from first principles. Look at how an existing shared folder is owned and copy it.
 
-### No inbound ports, ever
+### No inbound ports for the websites
 
-The tunnel connects outward from the server to the edge. There is no port forward, no dynamic DNS
-pointing at the house, and no listening service exposed to the internet.
+The tunnel connects outward from the server to the edge. No website has a port forward, there is no
+dynamic DNS pointing at the house, and none of them listens on the internet.
 
 This costs almost nothing and removes an entire category of attack. It also means a misconfigured
 service cannot accidentally become world-reachable through the router.
 
-⚠️ **But it introduces a subtler risk that caught me out:** a container with **no
+⚠️ **The one exception is Plex.** Remote streaming needs a forward on port 32400, so that service is
+reachable from the internet directly. It is the one deliberate hole in this design, and it is
+written down here so nobody mistakes it for an accident.
+
+⚠️ **The tunnel also introduces a subtler risk that caught me out:** a container with **no
 published port at all can still be world-reachable**, because the tunnel does not care about the
 container's port mapping. It reaches the service by name on the internal network. If you audit
 exposure by looking at published ports, you will conclude something is private when it is not.
