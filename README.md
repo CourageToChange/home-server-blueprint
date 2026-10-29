@@ -14,7 +14,7 @@ do not. Where a specific number appears it is there because the number itself ta
 
 ## The shape
 
-One hypervisor. Every service in its own unprivileged container, and full virtual machines where a
+One hypervisor. Most services get an unprivileged container of their own (the apps I build share one), and full virtual machines where a
 container is not a hard enough boundary, or the software only ships as a whole appliance.
 The websites and demos are reached through an **outbound-only tunnel**, so none of them needs a
 forwarded port and no DNS record for them points at the home IP address. **One port is forwarded on the
@@ -32,13 +32,17 @@ router**: 32400, so Plex can stream outside the house.
     │  routes each hostname to its service   │
     └───┬────────────────────────────┬───────┘
         │                            │
-   ┌────┴─────┐                ┌─────┴──────────────┐
-   │ PRIVATE  │                │ PUBLIC             │
-   │ photos   │                │ demos              │
-   │ media    │                │                    │
-   │ documents│                │ own guest, own net │
-   │          │                │ egress blocked     │
-   └──────────┘                └────────────────────┘
+   ┌────┴─────────┐            ┌─────┴──────────────┐
+   │ PRIVATE      │            │ PUBLIC             │
+   │ my apps      │            │ demos              │
+   │ e-books      │            │                    │
+   │              │            │ own guest          │
+   │ login needed │            │ no route to the LAN│
+   └──────────────┘            └────────────────────┘
+
+   not behind the tunnel at all:
+   photos, documents   home network only
+   media (Plex)        router forward, port 32400
 ```
 
 **The demos live on their own guest with no route to the private ones.** Not a firewall rule inside
@@ -80,7 +84,7 @@ service cannot accidentally become world-reachable through the router.
 reachable from the internet directly. It is the one deliberate hole in this design, and it is
 written down here so nobody mistakes it for an accident.
 
-⚠️ **The tunnel also introduces a subtler risk that caught me out:** a container with **no
+⚠️ **The tunnel itself introduces a subtler risk that caught me out:** a container with **no
 published port at all can still be world-reachable**, because the tunnel does not care about the
 container's port mapping. It reaches the service by name on the internal network. If you audit
 exposure by looking at published ports, you will conclude something is private when it is not.
