@@ -105,7 +105,7 @@ dependencies and will be tempted to "fix" the firewall. It is not broken.
 
 That container's images are built on a trusted machine and shipped in as finished artifacts, so it
 never needs to reach a package registry. The machine around it still reaches the internet on the
-usual web ports, for its own updates and its tunnel.
+web ports and the tunnel's own port, for its own updates and its tunnel, and never a private address.
 
 The other is allowed out to ports 80 and 443 on purpose, because it does pull packages at build
 time, and its firewall comment says so in as many words. It still cannot reach a single private
