@@ -99,10 +99,13 @@ reboot.
 📌 **A constraint like this will look, later, like an oversight**, and the two public guests are
 not constrained the same way, which is the part worth understanding before touching either.
 
-One of them has no outbound access at all. Someone will find that it cannot download its own
-dependencies and will be tempted to "fix" the firewall. It is not broken. That guest's images are
-built on a trusted machine and shipped in as finished artifacts, so production never needs to
-reach a package registry.
+On one of them the app's container is almost cut off: it can look up names and make HTTPS calls to
+Google, to check a sign-in, and nothing else. Someone will find that it cannot download its own
+dependencies and will be tempted to "fix" the firewall. It is not broken.
+
+That container's images are built on a trusted machine and shipped in as finished artifacts, so it
+never needs to reach a package registry. The machine around it still reaches the internet on the
+usual web ports, for its own updates and its tunnel.
 
 The other is allowed out to ports 80 and 443 on purpose, because it does pull packages at build
 time, and its firewall comment says so in as many words. It still cannot reach a single private
